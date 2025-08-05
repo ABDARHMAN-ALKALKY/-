@@ -2,479 +2,404 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>محفظة GoldCrypto مع إدارة متقدمة</title>
+  <title>GoldCrypto Wallet</title>
   <style>
     body {
-      background: #1e1e2f;
-      color: #eee;
+      background: linear-gradient(to bottom, #1e1e2f, #292945);
+      color: #f5f5f5;
       font-family: "Cairo", sans-serif;
-      margin: 0; padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    #app {
-      width: 450px;
-      background: #292945;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #ffcc00;
       text-align: center;
-      font-size: 14px;
+      padding: 20px;
     }
-    h1 {
-      margin-bottom: 20px;
+    h1, h2 {
       color: #ffcc00;
     }
+    .hidden { display: none; }
     input, select {
-      width: 90%;
-      padding: 8px;
-      margin: 6px 0;
-      border-radius: 6px;
-      border: none;
-      font-size: 14px;
-      text-align: center;
+      padding: 8px; margin: 5px;
+      border-radius: 6px; border: none; text-align: center;
     }
     button {
-      padding: 10px 15px;
-      background: #ffcc00;
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
+      padding: 10px 20px; margin: 10px;
+      background: #ffcc00; color: #000;
+      border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
     }
     button:hover {
       background: #ffd633;
     }
-    .hidden { display: none; }
-    .wallet-currency {
-      background: #3a3a63;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: right;
+    table {
+      width: 80%; margin: 20px auto;
+      border-collapse: collapse;
+      background: #2f2f47;
+      border-radius: 12px; overflow: hidden;
     }
-    .operations-list {
-      max-height: 150px;
-      overflow-y: auto;
-      background: #222241;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: right;
-      font-size: 13px;
+    th, td {
+      padding: 12px; border-bottom: 1px solid #444;
     }
-    .admin-section {
-      margin-top: 20px;
-      border-top: 1px solid #444;
-      padding-top: 20px;
-      text-align: right;
-      font-size: 14px;
+    th {
+      background-color: #ffcc00; color: #000;
     }
-    .small-btn {
-      font-size: 12px;
-      padding: 5px 10px;
-      width: auto;
-      background: #00c896;
-      color: white;
-      margin-left: 5px;
-      cursor: pointer;
-      border-radius: 6px;
-      border: none;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 3px;
-      text-align: right;
+    #log {
+      margin-top: 20px; text-align: right; max-height: 200px; overflow-y: auto;
+      background: #2f2f47; padding: 10px; border-radius: 12px;
+      width: 80%; margin-left: auto; margin-right: auto;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <!-- شاشة اختيار -->
-    <div id="homeScreen">
-      <h1>مرحبا في GoldCrypto</h1>
-      <button onclick="showLogin()">تسجيل الدخول</button>
-      <button onclick="showAdmin()">الإدارة</button>
-    </div>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginScreen" class="hidden">
-      <h1>تسجيل الدخول</h1>
-      <input id="loginName" placeholder="الاسم" />
-      <input id="loginCode" placeholder="كود الحساب" readonly style="background:#555; cursor:not-allowed;"/>
-      <button onclick="login()">دخول</button>
-      <button onclick="goHome()">رجوع</button>
-      <div id="loginError" style="color:#ff6666; margin-top:10px;"></div>
-    </div>
-
-    <!-- شاشة المحفظة -->
-    <div id="walletScreen" class="hidden">
-      <h1>محفظتك</h1>
-      <div id="walletInfo"></div>
-      <h3>العمليات الأخيرة</h3>
-      <div class="operations-list" id="walletOperations"></div>
-      <button onclick="logout()">تسجيل خروج</button>
-    </div>
-
-    <!-- شاشة الإدارة -->
-    <div id="adminScreen" class="hidden">
-      <h1>لوحة الإدارة</h1>
-      <input type="password" id="adminPass" placeholder="كلمة السر" />
-      <button onclick="checkAdminPass()">دخول</button>
-      <button onclick="goHome()">رجوع</button>
-
-      <div id="adminPanel" class="hidden">
-
-        <!-- إنشاء محفظة جديدة -->
-        <h3>إنشاء محفظة جديدة</h3>
-        <input id="newName" placeholder="اسم المستخدم" />
-        <button onclick="createWallet()">إنشاء المحفظة</button>
-
-        <!-- إضافة عملة لمحفظة -->
-        <h3>إضافة عملة لمحفظة</h3>
-        <select id="selectWallet"></select>
-        <select id="selectCurrency">
-          <option value="Bitcoin">Bitcoin (BTC)</option>
-          <option value="DASH">DASH</option>
-          <option value="USDT">Tether (USDT)</option>
-          <option value="Monero">Monero (XMR)</option>
-          <option value="Nano">Nano (NANO)</option>
-          <option value="Litecoin">Litecoin (LTC)</option>
-        </select>
-        <button onclick="addCurrencyToWallet()">إضافة العملة</button>
-
-        <!-- إجراء عمليات شراء وبيع -->
-        <h3>إجراء عملية شراء / بيع</h3>
-        <label for="opWallet">اختر المحفظة:</label>
-        <select id="opWallet"></select>
-
-        <label for="opCurrency">اختر العملة:</label>
-        <select id="opCurrency"></select>
-
-        <label for="opType">نوع العملية:</label>
-        <select id="opType">
-          <option value="buy">شراء</option>
-          <option value="sell">بيع</option>
-        </select>
-
-        <label for="opAmount">الكمية:</label>
-        <input id="opAmount" type="number" min="1" value="1" />
-
-        <button onclick="performOperation()">تنفيذ العملية</button>
-
-        <!-- عرض الأسعار الحالية -->
-        <h3>الأسعار الحالية</h3>
-        <div id="currentPrices"></div>
-
-      </div>
-    </div>
+  <div id="loginPage">
+    <h1>💰 تسجيل الدخول GoldCrypto</h1>
+    <input type="text" id="accountCodeLogin" placeholder="كود الحساب (مثلاً Z000Z)" />
+    <button onclick="login()">دخول</button>
+    <hr style="margin: 40px 0;" />
+    <h2>أو الدخول للإدارة</h2>
+    <button onclick="showAdminLogin()">الذهاب للإدارة</button>
   </div>
 
-  <script>
-    let wallets = JSON.parse(localStorage.getItem("wallets")) || [];
-    let prices = JSON.parse(localStorage.getItem("prices")) || {
-      Bitcoin: 1000,
-      DASH: 250,
-      USDT: 100,
-      Monero: 600,
-      Nano: 120,
-      Litecoin: 300
-    };
-    let operationsLog = JSON.parse(localStorage.getItem("operationsLog")) || [];
+  <div id="adminLoginPage" class="hidden">
+    <h1>🛠️ تسجيل دخول الإدارة</h1>
+    <input type="password" id="adminPassword" placeholder="كلمة السر الإدارية" />
+    <button onclick="adminLogin()">دخول الإدارة</button>
+    <button onclick="backToLogin()">رجوع</button>
+    <div id="adminLoginMsg" style="color:#f33;"></div>
+  </div>
 
-    // كود الحساب تلقائي يبدأ من Z000Z ويتزايد
-    function generateAccountCode() {
-      let lastCode = wallets.length > 0 ? wallets[wallets.length - 1].accountCode : null;
-      if(!lastCode) return "Z000Z";
-      let num = parseInt(lastCode.slice(1, 4));
-      num++;
-      return "Z" + num.toString().padStart(3,"0") + "Z";
+  <div id="adminPage" class="hidden">
+    <h1>🛠️ لوحة الإدارة</h1>
+    <h2>إنشاء محفظة جديدة</h2>
+    <input type="text" id="newAccountName" placeholder="اسم العميل" />
+    <input type="text" id="newAccountBankCode" placeholder="كود البطاقة البنكية" />
+    <input type="password" id="newAccountPassword" placeholder="كلمة سر إنشاء المحفظة" />
+    <button onclick="createAccount()">إنشاء المحفظة</button>
+    <p>الكلمة السرية لإنشاء المحفظة هي: <b>TECNO LD7</b></p>
+
+    <h2>العمليات</h2>
+    <select id="adminAccountSelect"></select>
+    <select id="adminCryptoSelect"></select>
+    <select id="operationTypeSelect">
+      <option value="buy">شراء</option>
+      <option value="sell">بيع</option>
+    </select>
+    <input type="number" id="operationAmount" placeholder="الكمية" />
+    <button onclick="adminAddOperation()">إضافة العملية</button>
+
+    <h2>سجل العمليات</h2>
+    <div id="adminLog" style="max-height: 300px; overflow-y: auto; background:#2f2f47; padding: 10px; border-radius:12px;"></div>
+    <button onclick="adminLogout()">تسجيل خروج الإدارة</button>
+  </div>
+
+  <div id="walletPage" class="hidden">
+    <h1>محفظة العميل</h1>
+    <div id="walletInfo"></div>
+    <h2>العمليات</h2>
+    <select id="walletCryptoSelect"></select>
+    <select id="walletOperationType">
+      <option value="buy">شراء</option>
+      <option value="sell">بيع</option>
+    </select>
+    <input type="number" id="walletOperationAmount" placeholder="الكمية" />
+    <button onclick="walletAddOperation()">إضافة العملية</button>
+
+    <h2>سجل العمليات</h2>
+    <div id="walletLog" style="max-height: 300px; overflow-y: auto; background:#2f2f47; padding: 10px; border-radius:12px;"></div>
+    <button onclick="logout()">تسجيل خروج</button>
+  </div>
+
+<script>
+  // البيانات الأساسية للعملات
+  const baseCryptos = [
+    {name: "Bitcoin (BTC)", price: 1000},
+    {name: "DASH", price: 250},
+    {name: "Tether (USDT)", price: 100},
+    {name: "Monero (XMR)", price: 600},
+    {name: "Nano (NANO)", price: 120},
+    {name: "Litecoin (LTC)", price: 300},
+  ];
+
+  // تغير السعر بعد العملية بنسبة 20% شراء و 15% بيع
+  const buyImpact = 0.20;   
+  const sellImpact = 0.15;
+
+  // حفظ الحسابات (محفظة كل عميل)
+  let accounts = [];
+
+  // إنشاء رمز حساب تلقائي (Z000Z, Z001Z, ...)
+  function generateAccountCode() {
+    let num = accounts.length;
+    return 'Z' + String(num).padStart(3, '0') + 'Z';
+  }
+
+  // الصفحة والدخول
+  const loginPage = document.getElementById('loginPage');
+  const adminLoginPage = document.getElementById('adminLoginPage');
+  const adminPage = document.getElementById('adminPage');
+  const walletPage = document.getElementById('walletPage');
+
+  let currentAccount = null;
+
+  // عرض صفحة الإدارة تسجيل دخول
+  function showAdminLogin() {
+    loginPage.classList.add('hidden');
+    adminLoginPage.classList.remove('hidden');
+  }
+  function backToLogin() {
+    adminLoginPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+  }
+
+  // تسجيل دخول الإدارة بكلمة سر ثابتة
+  function adminLogin() {
+    const pwd = document.getElementById('adminPassword').value.trim();
+    const msg = document.getElementById('adminLoginMsg');
+    if(pwd === 'TECNO LD7') {
+      adminLoginPage.classList.add('hidden');
+      adminPage.classList.remove('hidden');
+      msg.textContent = '';
+      refreshAdminAccountSelect();
+      refreshAdminCryptoSelect();
+      refreshAdminLog();
+    } else {
+      msg.textContent = 'كلمة السر غير صحيحة';
+    }
+  }
+
+  // تسجيل خروج الإدارة
+  function adminLogout() {
+    adminPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+  }
+
+  // إنشاء حساب جديد (محفظة)
+  function createAccount() {
+    const name = document.getElementById('newAccountName').value.trim();
+    const bankCode = document.getElementById('newAccountBankCode').value.trim();
+    const pwd = document.getElementById('newAccountPassword').value.trim();
+    if(pwd !== 'TECNO LD7') {
+      alert('❌ كلمة السر لإنشاء المحفظة غير صحيحة');
+      return;
+    }
+    if(!name || !bankCode) {
+      alert('❌ يرجى تعبئة كل الحقول');
+      return;
+    }
+    const newCode = generateAccountCode();
+    // كل محفظة تحوي العملات بقيم أولية وكمية صفر
+    const cryptos = baseCryptos.map(c => ({...c, quantity: 0, bought: 0, sold: 0}));
+    accounts.push({
+      name, bankCode, code: newCode,
+      cryptos,
+      operations: []
+    });
+    alert(`✅ تم إنشاء المحفظة. كود الحساب هو: ${newCode}`);
+    document.getElementById('newAccountName').value = '';
+    document.getElementById('newAccountBankCode').value = '';
+    document.getElementById('newAccountPassword').value = '';
+    refreshAdminAccountSelect();
+  }
+
+  // تحديث قائمة الحسابات في الإدارة
+  function refreshAdminAccountSelect() {
+    const sel = document.getElementById('adminAccountSelect');
+    sel.innerHTML = '';
+    accounts.forEach((acc,i) => {
+      let opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${acc.name} (${acc.code})`;
+      sel.appendChild(opt);
+    });
+  }
+  // تحديث قائمة العملات في الإدارة
+  function refreshAdminCryptoSelect() {
+    const sel = document.getElementById('adminCryptoSelect');
+    sel.innerHTML = '';
+    baseCryptos.forEach((c,i) => {
+      let opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // إضافة عملية شراء أو بيع من الإدارة
+  function adminAddOperation() {
+    if(accounts.length === 0) {
+      alert('❌ لا يوجد حسابات');
+      return;
+    }
+    const accIndex = +document.getElementById('adminAccountSelect').value;
+    const cryptoIndex = +document.getElementById('adminCryptoSelect').value;
+    const type = document.getElementById('operationTypeSelect').value;
+    const amount = +document.getElementById('operationAmount').value;
+    if(amount <= 0 || isNaN(amount)) {
+      alert('❌ أدخل كمية صحيحة');
+      return;
+    }
+    const account = accounts[accIndex];
+    const crypto = account.cryptos[cryptoIndex];
+    const baseCrypto = baseCryptos[cryptoIndex];
+
+    // حد يومي لكل حساب - لكل عملة
+    if(type === 'buy' && account.operations.filter(op => op.type === 'buy' && op.cryptoIndex === cryptoIndex).reduce((a,v) => a + v.amount, 0) + amount > 100) {
+      alert('❌ تجاوزت الحد اليومي للشراء لهذه العملة (100 وحدة)');
+      return;
     }
 
-    // تغيير الأسعار كل ساعة بنسبة عشوائية -3% إلى +3%
-    function randomPriceChange(price) {
-      let changePercent = (Math.random() * 6 - 3) / 100;
-      return Math.max(price * (1 + changePercent), 1);
-    }
-
-    function updatePrices() {
-      for(let key in prices) {
-        prices[key] = randomPriceChange(prices[key]);
-      }
-      saveData();
-      if(document.getElementById("currentPrices")) renderPrices();
-    }
-    setInterval(updatePrices, 3600 * 1000);
-    updatePrices();
-
-    // حفظ البيانات
-    function saveData() {
-      localStorage.setItem("wallets", JSON.stringify(wallets));
-      localStorage.setItem("prices", JSON.stringify(prices));
-      localStorage.setItem("operationsLog", JSON.stringify(operationsLog));
-    }
-
-    // إظهار الأسعار
-    function renderPrices() {
-      const cp = document.getElementById("currentPrices");
-      cp.innerHTML = "";
-      for(let key in prices) {
-        const div = document.createElement("div");
-        div.textContent = `${key}: ${prices[key].toFixed(2)} G`;
-        cp.appendChild(div);
-      }
-    }
-
-    // شاشات
-    function showLogin() {
-      hideAllScreens();
-      document.getElementById("loginScreen").classList.remove("hidden");
-      document.getElementById("loginCode").value = "";
-    }
-    function showAdmin() {
-      hideAllScreens();
-      document.getElementById("adminScreen").classList.remove("hidden");
-      document.getElementById("adminPass").value = "";
-      document.getElementById("adminPanel").classList.add("hidden");
-    }
-    function goHome() {
-      hideAllScreens();
-      document.getElementById("homeScreen").classList.remove("hidden");
-    }
-    function showWalletScreen() {
-      hideAllScreens();
-      document.getElementById("walletScreen").classList.remove("hidden");
-    }
-    function hideAllScreens() {
-      document.getElementById("homeScreen").classList.add("hidden");
-      document.getElementById("loginScreen").classList.add("hidden");
-      document.getElementById("walletScreen").classList.add("hidden");
-      document.getElementById("adminScreen").classList.add("hidden");
-    }
-
-    // تسجيل الدخول
-    let currentUser = null;
-    function login() {
-      const name = document.getElementById("loginName").value.trim();
-      // بدل كود البطاقة البنكية الكود أصبح accountCode
-      const wallet = wallets.find(w => w.name === name);
-      const err = document.getElementById("loginError");
-      err.textContent = "";
-      if(!wallet) {
-        err.textContent = "❌ المحفظة غير موجودة";
+    // تنفيذ العملية
+    if(type === 'buy') {
+      crypto.quantity += amount;
+      crypto.bought += amount;
+      // تحديث السعر بعد العملية
+      crypto.price = crypto.price * (1 + buyImpact);
+    } else {
+      if(amount > crypto.quantity) {
+        alert('❌ الكمية للبيع أكبر من الكمية المتوفرة');
         return;
       }
-      document.getElementById("loginCode").value = wallet.accountCode;
-      currentUser = wallet;
-      renderWallet();
-      showWalletScreen();
+      crypto.quantity -= amount;
+      crypto.sold += amount;
+      crypto.price = crypto.price * (1 - sellImpact);
     }
 
-    // عرض المحفظة
-    function renderWallet() {
-      const infoDiv = document.getElementById("walletInfo");
-      infoDiv.innerHTML = `<h3>مرحبا، ${currentUser.name}</h3>رمز الحساب: ${currentUser.accountCode}<br/><br/>`;
+    const now = new Date().toLocaleString('ar-EG');
+    const priceAtOperation = crypto.price;
+    const opText = (type === 'buy' ? 'شراء' : 'بيع') + ` ${amount} ${crypto.name} بسعر ${priceAtOperation.toFixed(2)}G`;
 
-      if(!currentUser.currencies || currentUser.currencies.length === 0) {
-        infoDiv.innerHTML += "<p>لم تضف أي عملات بعد.</p>";
-      } else {
-        currentUser.currencies.forEach(c => {
-          infoDiv.innerHTML += `
-            <div class="wallet-currency">
-              <strong>${c}</strong>: ${prices[c].toFixed(2)} G
-            </div>
-          `;
-        });
-      }
+    account.operations.push({
+      type, cryptoIndex, amount, priceAtOperation, date: now, text: opText
+    });
 
-      // العمليات الخاصة بهذا المستخدم
-      let userOps = operationsLog.filter(op => op.userCode === currentUser.accountCode);
-      let opsDiv = document.getElementById("walletOperations");
-      if(userOps.length === 0) {
-        opsDiv.innerHTML = "<p>لا توجد عمليات حتى الآن.</p>";
-      } else {
-        opsDiv.innerHTML = "";
-        userOps.slice(-10).reverse().forEach(op=>{
-          opsDiv.innerHTML += `<div>• ${op.type === "buy" ? "شراء" : "بيع"} ${op.amount} ${op.currency} بسعر ${op.price.toFixed(2)} G</div>`;
-        });
-      }
+    document.getElementById('operationAmount').value = '';
+    refreshAdminLog();
+    alert('✅ تم إضافة العملية');
+  }
+
+  // تحديث سجل العمليات في الإدارة
+  function refreshAdminLog() {
+    const accIndex = +document.getElementById('adminAccountSelect').value;
+    const account = accounts[accIndex];
+    const logDiv = document.getElementById('adminLog');
+    if(account.operations.length === 0) {
+      logDiv.textContent = 'لا توجد عمليات بعد.';
+      return;
+    }
+    logDiv.innerHTML = account.operations.map(op => 
+      `• ${op.date} - ${op.text}`
+    ).join('<br>');
+  }
+
+  // تسجيل دخول مستخدم (محفظة)
+  function login() {
+    const code = document.getElementById('accountCodeLogin').value.trim().toUpperCase();
+    const acc = accounts.find(a => a.code === code);
+    if(!acc) {
+      alert('❌ كود الحساب غير صحيح');
+      return;
+    }
+    currentAccount = acc;
+    loginPage.classList.add('hidden');
+    showWalletPage();
+  }
+
+  // عرض محفظة المستخدم
+  function showWalletPage() {
+    walletPage.classList.remove('hidden');
+    refreshWalletInfo();
+    refreshWalletCryptoSelect();
+    refreshWalletLog();
+  }
+
+  // تحديث عرض المحفظة: الكميات لكل عملة
+  function refreshWalletInfo() {
+    let html = `<table><thead><tr><th>العملة</th><th>السعر الحالي (G)</th><th>الكمية</th></tr></thead><tbody>`;
+    currentAccount.cryptos.forEach(c => {
+      html += `<tr><td>${c.name}</td><td>${c.price.toFixed(2)}</td><td>${c.quantity}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('walletInfo').innerHTML = html;
+  }
+
+  // تحديث قائمة العملات في محفظة المستخدم
+  function refreshWalletCryptoSelect() {
+    const sel = document.getElementById('walletCryptoSelect');
+    sel.innerHTML = '';
+    currentAccount.cryptos.forEach((c,i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // إضافة عملية شراء/بيع من محفظة المستخدم
+  function walletAddOperation() {
+    const cryptoIndex = +document.getElementById('walletCryptoSelect').value;
+    const type = document.getElementById('walletOperationType').value;
+    const amount = +document.getElementById('walletOperationAmount').value;
+    if(amount <= 0 || isNaN(amount)) {
+      alert('❌ أدخل كمية صحيحة');
+      return;
+    }
+    const crypto = currentAccount.cryptos[cryptoIndex];
+
+    // حد يومي (مثلا 100 لكل عملة لكل حساب)
+    if(type === 'buy' && currentAccount.operations.filter(op => op.type === 'buy' && op.cryptoIndex === cryptoIndex).reduce((a,v) => a + v.amount, 0) + amount > 100) {
+      alert('❌ تجاوزت الحد اليومي للشراء لهذه العملة (100 وحدة)');
+      return;
     }
 
-    function logout() {
-      currentUser = null;
-      goHome();
-    }
-
-    // إدارة
-    function checkAdminPass() {
-      const pass = document.getElementById("adminPass").value;
-      if(pass === "TECNO LD7") {
-        document.getElementById("adminPanel").classList.remove("hidden");
-        alert("تم الدخول للوحة الإدارة");
-        renderAdminWallets();
-        renderPrices();
-        updateOpWallets();
-      } else {
-        alert("كلمة السر خاطئة");
-      }
-    }
-
-    // عرض المحافظ في الإدارة
-    function renderAdminWallets() {
-      const select = document.getElementById("selectWallet");
-      select.innerHTML = "";
-      wallets.forEach((w,i)=>{
-        const opt = document.createElement("option");
-        opt.value = i;
-        opt.textContent = `${w.name} (${w.accountCode})`;
-        select.appendChild(opt);
-      });
-    }
-
-    // لإنشاء محفظة جديدة مع كود تلقائي
-    function createWallet() {
-      const n = document.getElementById("newName").value.trim();
-      if(!n) {
-        alert("الرجاء إدخال اسم المستخدم");
+    if(type === 'sell') {
+      if(amount > crypto.quantity) {
+        alert('❌ الكمية للبيع أكبر من الكمية المتوفرة');
         return;
       }
-      // منع تكرار الاسم
-      if(wallets.find(w=>w.name === n)) {
-        alert("الاسم مستخدم لمحفظة أخرى");
-        return;
-      }
-      const newCode = generateAccountCode();
-      wallets.push({name: n, accountCode: newCode, currencies: []});
-      saveData();
-      alert(`تم إنشاء المحفظة. كود الحساب: ${newCode}`);
-      document.getElementById("newName").value = "";
-      renderAdminWallets();
-      updateOpWallets();
     }
 
-    // إضافة عملة لمحفظة
-    function addCurrencyToWallet() {
-      const walletIndex = +document.getElementById("selectWallet").value;
-      const currency = document.getElementById("selectCurrency").value;
-      const wallet = wallets[walletIndex];
-      if(wallet.currencies.includes(currency)) {
-        alert("العملة موجودة بالفعل في المحفظة");
-        return;
-      }
-      wallet.currencies.push(currency);
-      saveData();
-      alert("تمت إضافة العملة");
-      updateOpCurrencies();
+    // تنفيذ العملية
+    if(type === 'buy') {
+      crypto.quantity += amount;
+      crypto.bought += amount;
+      crypto.price = crypto.price * (1 + buyImpact);
+    } else {
+      crypto.quantity -= amount;
+      crypto.sold += amount;
+      crypto.price = crypto.price * (1 - sellImpact);
     }
 
-    // تحديث قائمة المحافظ لعملية الشراء/البيع
-    function updateOpWallets() {
-      const select = document.getElementById("opWallet");
-      select.innerHTML = "";
-      wallets.forEach((w,i)=>{
-        const opt = document.createElement("option");
-        opt.value = i;
-        opt.textContent = `${w.name} (${w.accountCode})`;
-        select.appendChild(opt);
-      });
-      updateOpCurrencies();
+    const now = new Date().toLocaleString('ar-EG');
+    const priceAtOperation = crypto.price;
+    const opText = (type === 'buy' ? 'شراء' : 'بيع') + ` ${amount} ${crypto.name} بسعر ${priceAtOperation.toFixed(2)}G`;
+
+    currentAccount.operations.push({
+      type, cryptoIndex, amount, priceAtOperation, date: now, text: opText
+    });
+
+    document.getElementById('walletOperationAmount').value = '';
+    refreshWalletInfo();
+    refreshWalletLog();
+    alert('✅ تم إضافة العملية');
+  }
+
+  // تحديث سجل العمليات لمحفظة المستخدم
+  function refreshWalletLog() {
+    const logDiv = document.getElementById('walletLog');
+    if(currentAccount.operations.length === 0) {
+      logDiv.textContent = 'لا توجد عمليات بعد.';
+      return;
     }
+    logDiv.innerHTML = currentAccount.operations.map(op =>
+      `• ${op.date} - ${op.text}`
+    ).join('<br>');
+  }
 
-    // تحديث قائمة العملات بناءً على المحفظة المختارة لعملية الشراء/البيع
-    function updateOpCurrencies() {
-      const walletIndex = +document.getElementById("opWallet").value;
-      const currencySelect = document.getElementById("opCurrency");
-      currencySelect.innerHTML = "";
-      if(wallets[walletIndex] && wallets[walletIndex].currencies.length > 0) {
-        wallets[walletIndex].currencies.forEach(c => {
-          const opt = document.createElement("option");
-          opt.value = c;
-          opt.textContent = c;
-          currencySelect.appendChild(opt);
-        });
-      } else {
-        const opt = document.createElement("option");
-        opt.textContent = "لا توجد عملات";
-        opt.disabled = true;
-        currencySelect.appendChild(opt);
-      }
-    }
+  // تسجيل خروج من المحفظة
+  function logout() {
+    currentAccount = null;
+    walletPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+    document.getElementById('accountCodeLogin').value = '';
+  }
 
-    document.getElementById("opWallet").addEventListener("change", updateOpCurrencies);
-
-    // إجراء عملية شراء أو بيع
-    function performOperation() {
-      const walletIndex = +document.getElementById("opWallet").value;
-      const type = document.getElementById("opType").value;
-      const currency = document.getElementById("opCurrency").value;
-      const amount = parseFloat(document.getElementById("opAmount").value);
-
-      if(isNaN(amount) || amount <= 0) {
-        alert("الرجاء إدخال كمية صحيحة أكبر من صفر");
-        return;
-      }
-      const wallet = wallets[walletIndex];
-      if(!wallet) {
-        alert("محفظة غير موجودة");
-        return;
-      }
-      if(!wallet.currencies.includes(currency)) {
-        alert("العملة غير موجودة في المحفظة");
-        return;
-      }
-
-      // السعر قبل العملية
-      const priceBefore = prices[currency];
-
-      // العمليات: 
-      // الشراء يزيد السعر 20% بعد العملية (للسعر الجديد)
-      // البيع ينقص السعر 15% بعد العملية
-      if(type === "buy") {
-        // لا نزيد السعر أثناء الشراء، فقط بعد العملية
-        // إضافة سجل العملية
-        operationsLog.push({
-          userCode: wallet.accountCode,
-          type: "buy",
-          currency,
-          amount,
-          price: priceBefore,
-          timestamp: Date.now()
-        });
-
-        // زيادة السعر بعد الشراء
-        prices[currency] = priceBefore * 1.20;
-
-      } else if(type === "sell") {
-        // سجل العملية
-        operationsLog.push({
-          userCode: wallet.accountCode,
-          type: "sell",
-          currency,
-          amount,
-          price: priceBefore,
-          timestamp: Date.now()
-        });
-
-        // خفض السعر بعد البيع
-        prices[currency] = priceBefore * 0.85;
-      }
-
-      saveData();
-      alert(`تم تسجيل عملية ${type === "buy" ? "شراء" : "بيع"} ${amount} ${currency} بسعر ${priceBefore.toFixed(2)} G`);
-
-      renderPrices();
-      renderAdminWallets();
-      updateOpCurrencies();
-    }
-
-    // بدء تشغيل: إظهار الشاشة الرئيسية
-    goHome();
-  </script>
+</script>
 </body>
 </html>
